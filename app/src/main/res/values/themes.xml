@@ -1,0 +1,8 @@
+<resources>
+
+  <style name="AppTheme" parent="android:Theme.Material.Light">
+    <item name="android:colorPrimary">@android:color/white</item>
+    <item name="android:colorPrimaryDark">@android:color/darker_gray</item>
+    <item name="android:colorAccent">@color/teal_200</item>
+  </style>
+</resources>

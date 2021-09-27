@@ -2,6 +2,8 @@ package com.roy.database;
 
 /**
  * Created by Roy on 2021/9/25.
+ * sqlite3_stmt* jni 封装
+ * 查询也是通过 sqlite3_stmt* 来实现的 -> 在Java中表现为一个 Cursor
  */
 public class SQLiteCursor {
   /**
@@ -31,37 +33,38 @@ public class SQLiteCursor {
 
   /**
    * 是否可以执行查询的标识
-   * 当且仅当调用 sqlite3_step(sqlite3_stmt*) 之后的返回值为SQLITE_ROW为true
    */
   private boolean inRow = false;
 
   /**
    * {@link SQLiteStatement}
    */
-  private SQLiteStatement statement;
+  private SQLiteStatement stmt;
 
   /**
-   * @param statement {@link SQLiteStatement}
+   * @param stmt {@link SQLiteStatement}
    */
-  /*package private*/ SQLiteCursor(SQLiteStatement statement) {
-    this.statement = statement;
+  /*package private*/ SQLiteCursor(final SQLiteStatement stmt) {
+    this.stmt = stmt;
   }
 
   /**
    * 把游标下移一行
+   * 实质上是调用 sqlite3_step(sqlite3_stmt*)
+   * 当它的返回值是 SQLITE_ROW 的时候表示还有下一行数据
+   * 这个时候视为 “下移成功”
    *
-   * @return true  下移成功
-   * false 下移动失败
+   * @return true 下移成功
    * @throws SQLiteException 执行过程中出错时抛出
    */
   public boolean next() throws SQLiteException {
-    int res = statement.step();
+    int res = stmt.step();
     if (-1 == res) {
       int count = 7;
       while (0 != --count) {
         try {
           Thread.sleep(500);
-          res = statement.step();
+          res = stmt.step();
           if (0 == res) break;
         } catch (Exception ignore) {
         }
@@ -78,23 +81,24 @@ public class SQLiteCursor {
    * @return 执行过程中出错时抛出
    */
   public int getCount() throws SQLiteException {
-    return nGetCount(statement.getHandle());
+    return nGetCount(stmt.getHandle());
   }
 
   /**
    * 获取某一列对应的数据类型
    *
    * @param index 列下标索引
-   * @return {@link #TYPE_INT}        整数
-   * {@link #TYPE_FLOAT}      浮点数
-   * {@link #TYPE_STRING}     字符串
-   * {@link #TYPE_BYTE_ARRAY} byte数组
-   * {@link #TYPE_NULL}       空
+   * @return 下标索引所对应的数据类型
    * @throws SQLiteException 获取出错时抛出
+   * @see #TYPE_INT          整数
+   * @see #TYPE_FLOAT        浮点数
+   * @see #TYPE_STRING       字符串
+   * @see #TYPE_BYTE_ARRAY   byte数组
+   * @see #TYPE_NULL         空
    */
   public int getType(final int index) throws SQLiteException {
     checkRow(this);
-    return nGetType(statement.getHandle(), index);
+    return nGetType(stmt.getHandle(), index);
   }
 
   /**
@@ -106,7 +110,7 @@ public class SQLiteCursor {
    */
   public boolean columnIsNull(final int index) throws SQLiteException {
     checkRow(this);
-    return nColumnIsNull(statement.getHandle(), index);
+    return nColumnIsNull(stmt.getHandle(), index);
   }
 
   /**
@@ -118,7 +122,7 @@ public class SQLiteCursor {
    */
   public int getInt32(final int index) throws SQLiteException {
     checkRow(this);
-    return nGetInt32(statement.getHandle(), index);
+    return nGetInt32(stmt.getHandle(), index);
   }
 
   /**
@@ -130,7 +134,7 @@ public class SQLiteCursor {
    */
   public long getInt64(final int index) throws SQLiteException {
     checkRow(this);
-    return nGetInt64(statement.getHandle(), index);
+    return nGetInt64(stmt.getHandle(), index);
   }
 
   /**
@@ -142,7 +146,7 @@ public class SQLiteCursor {
    */
   public double getDouble(final int index) throws SQLiteException {
     checkRow(this);
-    return nGetDouble(statement.getHandle(), index);
+    return nGetDouble(stmt.getHandle(), index);
   }
 
   /**
@@ -154,7 +158,7 @@ public class SQLiteCursor {
    */
   public String getString(final int index) throws SQLiteException {
     checkRow(this);
-    return nGetString(statement.getHandle(), index);
+    return nGetString(stmt.getHandle(), index);
   }
 
   /**
@@ -166,7 +170,7 @@ public class SQLiteCursor {
    */
   public byte[] getBlob(final int index) throws SQLiteException {
     checkRow(this);
-    return nGetBlob(statement.getHandle(), index);
+    return nGetBlob(stmt.getHandle(), index);
   }
 
   /**
@@ -183,9 +187,9 @@ public class SQLiteCursor {
    * 释放资源
    */
   public void dispose() {
-    if (null != statement) {
-      statement.dispose();
-      statement = null;
+    if (null != stmt) {
+      stmt.dispose();
+      stmt = null;
     }
   }
 

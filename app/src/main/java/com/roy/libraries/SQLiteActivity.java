@@ -40,7 +40,7 @@ public class SQLiteActivity extends Activity {
 
   private void insertStudent() {
     SQLiteDatabase db = null;
-    SQLiteStatement statement = null;
+    SQLiteStatement stmt = null;
     try {
       db = SQLiteDatabase.open(dbname);
       if (!db.isTableExists("Student")) {
@@ -58,15 +58,17 @@ public class SQLiteActivity extends Activity {
           .dispose();
       }
       final String uuid = UUID.randomUUID().toString();
-      statement = db.compile("INSERT INTO Student(sex,age,name,number,height,weight,tel) " +
+      db.beginTransaction();
+      stmt = db.compile("INSERT INTO Student(sex,age,name,number,height,weight,tel) " +
         "VALUES(?,?,?,?,?,?,?);")
         .bind(new Object[]{1, 27, "Roy", String.valueOf(uuid.hashCode()), 178.5, 74.2, "13666666666"});
-      statement.step();
+      stmt.step();
+      db.commitTransaction();
     } catch (SQLiteException e) {
       ToastUtil.showToast(e.getMessage());
       e.printStackTrace();
     } finally {
-      if (null != statement) statement.dispose();
+      if (null != stmt) stmt.dispose();
       closeSafely(db);
     }
   }
@@ -139,7 +141,7 @@ public class SQLiteActivity extends Activity {
 
       final Button buttonInsert = new Button(context);
       final LayoutParams insertButtonLayoutParams = new LayoutParams(0, -2, 1f);
-      insertButtonLayoutParams.setMargins(0, dp(8), dp(4), dp(8));
+      insertButtonLayoutParams.setMargins(0, dp(4), dp(4), dp(4));
       buttonInsert.setLayoutParams(insertButtonLayoutParams);
       buttonInsert.setTextColor(Color.WHITE);
       buttonInsert.setBackground(makeShape(AndroidUtil.getColor(R.color.teal_200), 4, 0, 0));
@@ -147,7 +149,7 @@ public class SQLiteActivity extends Activity {
 
       final Button buttonSelect = new Button(context);
       final LayoutParams selectButtonLayoutParams = new LayoutParams(0, -2, 1f);
-      selectButtonLayoutParams.setMargins(dp(4), dp(8), 0, dp(8));
+      selectButtonLayoutParams.setMargins(dp(4), dp(4), 0, dp(4));
       buttonSelect.setLayoutParams(selectButtonLayoutParams);
       buttonSelect.setTextColor(Color.WHITE);
       buttonSelect.setBackground(makeShape(AndroidUtil.getColor(R.color.teal_200), 4, 0, 0));

@@ -1,9 +1,8 @@
 package com.roy.database;
 
-import java.io.Closeable;
-
 /**
  * Created by Roy on 2021/9/25.
+ * sqlite3_stmt* jni 封装
  */
 public class SQLiteStatement {
 

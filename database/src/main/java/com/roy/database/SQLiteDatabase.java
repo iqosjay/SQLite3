@@ -5,6 +5,7 @@ import java.io.File;
 
 /**
  * Created by Roy on 2021/9/25.
+ * sqlite3* jni 封装
  */
 public class SQLiteDatabase implements Closeable {
   /**
@@ -80,8 +81,6 @@ public class SQLiteDatabase implements Closeable {
 
     try {
       nBeginTransaction(handle);
-    } catch (SQLiteException e) {
-      e.printStackTrace();
     } finally {
       isInTransaction = true;
     }
@@ -108,6 +107,7 @@ public class SQLiteDatabase implements Closeable {
   public void close() {
     if (0 != handle) {
       try {
+        commitTransaction();
         nCloseDatabase(handle);
       } catch (SQLiteException e) {
         e.printStackTrace();

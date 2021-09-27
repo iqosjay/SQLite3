@@ -94,18 +94,18 @@ public class SQLiteListAdapter extends BaseAdapter {
       tvId.setLayoutParams(new LayoutParams(0, -2, 1f));
       tvId.setTextColor(getColor(R.color.teal_200));
       tvId.setTextSize(TypedValue.COMPLEX_UNIT_PX, sp(18));
-      tvId.setGravity(Gravity.START | Gravity.CENTER_HORIZONTAL);
+      tvId.setGravity(Gravity.START);
       tvId.setPadding(0, dp(8), 0, dp(8));
 
       tvNumber.setLayoutParams(new LayoutParams(0, -2, 3f));
       tvNumber.setTextColor(Color.BLACK);
       tvNumber.setTextSize(TypedValue.COMPLEX_UNIT_PX, sp(16));
-      tvNumber.setGravity(Gravity.START | Gravity.CENTER_HORIZONTAL);
+      tvNumber.setGravity(Gravity.START);
       tvNumber.setPadding(0, dp(8), 0, dp(8));
 
       tvInfo.setTextColor(Color.DKGRAY);
       tvInfo.setTextSize(TypedValue.COMPLEX_UNIT_PX, sp(14));
-      tvInfo.setGravity(Gravity.START | Gravity.CENTER_HORIZONTAL);
+      tvInfo.setGravity(Gravity.START);
       tvInfo.setPadding(dp(16), 0, dp(16), dp(8));
 
       topLayout.addView(tvId);

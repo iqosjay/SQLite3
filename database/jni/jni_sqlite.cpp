@@ -3,12 +3,13 @@
 //
 
 #include <jni.h>
-
 #include <cassert>
 
 #include <sqlite/sqlite3.h>
 
 #include "definitions.h"
+#include "logger.h"
+
 //SQLiteDatabase.java
 #define FXN_SQLITE3_DATABASE(RETURN_TYPE, FXN_NAME, ...)    \
         extern "C" JNIEXPORT RETURN_TYPE JNICALL            \
@@ -41,8 +42,7 @@ constexpr const char kStatementFreed[] = "sqlite3_stmt has been finalized.";
 
 constexpr const int32_t kRetRow = 0;
 constexpr const int32_t kRetDone = 1;
-constexpr const int32_t kRetBusy = -1;
-constexpr const int32_t kRetUnknown = -100;
+constexpr const int32_t kRetFailed = -1;
 
 }
 
@@ -268,7 +268,7 @@ FXN_SQLITE3_CURSOR(jbyteArray, nGetBlob, jlong handle, jint index) {
 FXN_SQLITE3_STATEMENT(jlong, nPrepare, jlong handle, jstring sql) {
   char const* zsql = nullptr;
   sqlite3_stmt* statement = nullptr;
-  int32_t error_code = 0;
+  int32_t error_code;
   auto db = reinterpret_cast<sqlite3*> (handle);
   if (nullptr == db) {
     throw_sqlite3_exception(env, kDatabaseClosed);
@@ -404,7 +404,7 @@ FXN_SQLITE3_STATEMENT(void, nFinalize, jlong handle) {
 FXN_SQLITE3_STATEMENT(jint, nStep, jlong handle) {
   auto statement = reinterpret_cast<sqlite3_stmt*>(handle);
   if (statement_is_freed(env, statement)) {
-    return kRetUnknown;
+    return kRetFailed;
   }
   int error_code = sqlite3_step(statement);
   if (SQLITE_ROW == error_code) {
@@ -412,9 +412,9 @@ FXN_SQLITE3_STATEMENT(jint, nStep, jlong handle) {
   } else if (SQLITE_DONE == error_code) {
     return kRetDone;
   } else if (SQLITE_BUSY == error_code) {
-    return kRetBusy;
+    return kRetFailed;
   } else {
     throw_sqlite3_exception(env, sqlite3_db_handle(statement));
-    return kRetUnknown;
+    return kRetFailed;
   }
 }

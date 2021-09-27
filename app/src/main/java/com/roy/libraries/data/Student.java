@@ -4,14 +4,11 @@ package com.roy.libraries.data;
  * Created by Roy on 2021/9/26.
  */
 public class Student {
-  private long id;
-  private int sex;
-  private int age;
-  private String name;
-  private String number;
-  private double height;
-  private double weight;
-  private String tel;
+  private long id;        //主键id
+  private String name;    //名字
+  private int age;        //年龄
+  private double height;  //身高
+  private byte[] avatar;  //头像
 
   public long getId() {
     return id;
@@ -19,22 +16,6 @@ public class Student {
 
   public void setId(long id) {
     this.id = id;
-  }
-
-  public int getSex() {
-    return sex;
-  }
-
-  public void setSex(int sex) {
-    this.sex = sex;
-  }
-
-  public int getAge() {
-    return age;
-  }
-
-  public void setAge(int age) {
-    this.age = age;
   }
 
   public String getName() {
@@ -45,12 +26,12 @@ public class Student {
     this.name = name;
   }
 
-  public String getNumber() {
-    return number;
+  public int getAge() {
+    return age;
   }
 
-  public void setNumber(String number) {
-    this.number = number;
+  public void setAge(int age) {
+    this.age = age;
   }
 
   public double getHeight() {
@@ -61,20 +42,11 @@ public class Student {
     this.height = height;
   }
 
-  public double getWeight() {
-    return weight;
+  public byte[] getAvatar() {
+    return avatar;
   }
 
-  public void setWeight(double weight) {
-    this.weight = weight;
+  public void setAvatar(byte[] avatar) {
+    this.avatar = avatar;
   }
-
-  public String getTel() {
-    return tel;
-  }
-
-  public void setTel(String tel) {
-    this.tel = tel;
-  }
-
 }

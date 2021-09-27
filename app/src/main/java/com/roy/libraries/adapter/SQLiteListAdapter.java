@@ -1,29 +1,34 @@
 package com.roy.libraries.adapter;
 
 import static com.roy.libraries.utils.AndroidUtil.dp;
-import static com.roy.libraries.utils.AndroidUtil.getColor;
 import static com.roy.libraries.utils.AndroidUtil.sp;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.roy.libraries.R;
 import com.roy.libraries.data.Student;
+import com.roy.libraries.utils.AndroidUtil;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Created by Roy on 2021/9/26.
  */
 public class SQLiteListAdapter extends BaseAdapter {
+  private Map<byte[], Bitmap> avatarMap = null;
   private List<Student> students = null;
 
   public void setStudents(List<Student> students) {
@@ -57,61 +62,80 @@ public class SQLiteListAdapter extends BaseAdapter {
     }
     final Student student = getItem(position);
     if (null != student) {
-      holder.itemView.tvId.setText(String.format(Locale.CHINA, "Id:%1$04d", student.getId()));
-      holder.itemView.tvNumber.setText(String.format("编号：%1$s", student.getNumber()));
-      final int sex = student.getSex();
-      final int age = student.getAge();
       final String name = student.getName();
+      final byte[] avatar = student.getAvatar();
       final double height = student.getHeight();
-      final double weight = student.getWeight();
-      final String tel = student.getTel();
-      final String info = String.format(Locale.CHINA,
-        "姓名: %1$s \n性别: %2$s \n年龄: %3$s \n手机: %4$s \n身高 %5$.2fcm \n体重 %6$.2fkg",
-        name, 1 == sex ? "男" : "女", age, tel, height, weight);
+      final int age = student.getAge();
+      final String info = String.format(Locale.CHINA, "年龄: %1$d    身高: %2$.2f cm", age, height);
+      holder.itemView.tvName.setText(name);
       holder.itemView.tvInfo.setText(info);
+      holder.itemView.ivAvatar.setImageBitmap(getAvatarBmp(avatar));
     }
     return convertView;
   }
 
+  private Bitmap getAvatarBmp(final byte[] bytes) {
+    if (null == bytes) {
+      return null;
+    }
+    if (null == avatarMap) {
+      avatarMap = new HashMap<>();
+    }
+    final Bitmap bitmap = avatarMap.get(bytes);
+    if (null != bitmap) {
+      return bitmap;
+    }
+    final Bitmap bmp = AndroidUtil.bytes2bitmap(bytes);
+    avatarMap.put(bytes, bmp);
+    return bmp;
+  }
+
   private static class ItemView extends LinearLayout {
-    private final TextView tvId;
-    private final TextView tvNumber;
+    private final ImageView ivAvatar;
+    private final TextView tvName;
     private final TextView tvInfo;
 
     public ItemView(Context context) {
       super(context);
-      setOrientation(VERTICAL);
+      setOrientation(HORIZONTAL);
 
-      tvId = new TextView(context);
-      tvNumber = new TextView(context);
+      ivAvatar = new ImageView(context);
+      tvName = new TextView(context);
       tvInfo = new TextView(context);
 
-      final LinearLayout topLayout = new LinearLayout(context);
-      topLayout.setPadding(dp(16), 0, dp(16), 0);
-      topLayout.setOrientation(HORIZONTAL);
-      topLayout.setGravity(Gravity.BOTTOM);
+      final LayoutParams avatarLayoutParams = new LayoutParams(dp(48), dp(64));
+      avatarLayoutParams.setMargins(dp(16), dp(8), dp(16), dp(8));
+      avatarLayoutParams.gravity = Gravity.CENTER_VERTICAL;
+      ivAvatar.setLayoutParams(avatarLayoutParams);
+      ivAvatar.setScaleType(ImageView.ScaleType.FIT_XY);
 
-      tvId.setLayoutParams(new LayoutParams(0, -2, 1f));
-      tvId.setTextColor(getColor(R.color.teal_200));
-      tvId.setTextSize(TypedValue.COMPLEX_UNIT_PX, sp(18));
-      tvId.setGravity(Gravity.START);
-      tvId.setPadding(0, dp(8), 0, dp(8));
+      final LinearLayout infoLayoutFrame = new LinearLayout(context);
+      final LayoutParams infoLayoutParam = new LayoutParams(-1, -2);
+      infoLayoutFrame.setLayoutParams(infoLayoutParam);
+      infoLayoutParam.setMargins(0, dp(8), dp(16), dp(8));
+      infoLayoutParam.gravity = Gravity.CENTER_VERTICAL;
+      infoLayoutFrame.setOrientation(VERTICAL);
 
-      tvNumber.setLayoutParams(new LayoutParams(0, -2, 3f));
-      tvNumber.setTextColor(Color.BLACK);
-      tvNumber.setTextSize(TypedValue.COMPLEX_UNIT_PX, sp(16));
-      tvNumber.setGravity(Gravity.START);
-      tvNumber.setPadding(0, dp(8), 0, dp(8));
+      final LayoutParams nameLayoutParams = new LayoutParams(-1, -2);
+      nameLayoutParams.setMargins(0, dp(8), dp(16), dp(8));
+      tvName.setLayoutParams(nameLayoutParams);
+      tvName.setTextColor(Color.BLACK);
+      tvName.getPaint().setFakeBoldText(true);
+      tvName.setTextSize(TypedValue.COMPLEX_UNIT_PX, sp(18));
+      tvName.setGravity(Gravity.START);
 
+      final LayoutParams infoLayoutParams = new LayoutParams(-1, -2);
+      infoLayoutParams.setMargins(0, dp(8), dp(16), dp(8));
+      tvInfo.setLayoutParams(infoLayoutParams);
       tvInfo.setTextColor(Color.DKGRAY);
       tvInfo.setTextSize(TypedValue.COMPLEX_UNIT_PX, sp(14));
       tvInfo.setGravity(Gravity.START);
-      tvInfo.setPadding(dp(16), 0, dp(16), dp(8));
 
-      topLayout.addView(tvId);
-      topLayout.addView(tvNumber);
-      addView(topLayout);
-      addView(tvInfo);
+      infoLayoutFrame.addView(tvName);
+      infoLayoutFrame.addView(tvInfo);
+
+      addView(ivAvatar);
+      addView(infoLayoutFrame);
     }
   }
 

@@ -3,6 +3,7 @@ package com.roy.libraries.widget;
 import static com.roy.libraries.utils.AndroidUtil.dp;
 import static com.roy.libraries.utils.AndroidUtil.getColor;
 import static com.roy.libraries.utils.AndroidUtil.makeShape;
+import static com.roy.libraries.utils.AndroidUtil.screenHeight;
 import static com.roy.libraries.utils.AndroidUtil.screenWidth;
 import static com.roy.libraries.utils.AndroidUtil.sp;
 
@@ -11,9 +12,9 @@ import android.graphics.Color;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.roy.libraries.R;
@@ -22,20 +23,21 @@ import com.roy.libraries.R;
  * Created by Roy on 2021/9/27.
  * 加载中...
  */
-public class LoadingView extends RelativeLayout {
+public class LoadingView extends ViewGroup {
+  private final View coverView;
+  private final LinearLayout loadingLayout;
   private final TextView textView;
 
   public LoadingView(Context context) {
     super(context);
 
-    final View cover = new View(context);
-    cover.setLayoutParams(new LayoutParams(-1, -1));
-    cover.setBackgroundColor(0x33000000);
-    cover.setOnClickListener(v -> {});
+    coverView = new View(context);
+    coverView.setLayoutParams(new LayoutParams(-1, -1));
+    coverView.setBackgroundColor(0x33000000);
+    coverView.setOnClickListener(v -> {});
 
-    final LinearLayout loadingLayout = new LinearLayout(context);
+    loadingLayout = new LinearLayout(context);
     final LayoutParams loadingLayoutLayoutParams = new LayoutParams(screenWidth / 3, -2);
-    loadingLayoutLayoutParams.addRule(CENTER_IN_PARENT);
     loadingLayout.setOrientation(LinearLayout.VERTICAL);
     loadingLayout.setGravity(Gravity.CENTER_HORIZONTAL);
     loadingLayout.setBackground(makeShape(Color.WHITE, 4, 0, 0));
@@ -56,8 +58,42 @@ public class LoadingView extends RelativeLayout {
 
     loadingLayout.addView(progressBar);
     loadingLayout.addView(textView);
-    addView(cover);
+
+    addView(coverView);
     addView(loadingLayout);
+
+    setElevation(1024);
+  }
+
+  @Override
+  protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+    final int heightMode = MeasureSpec.getMode(widthMeasureSpec);
+    final int widthSpec;
+    final int heightSpec;
+    if (MeasureSpec.UNSPECIFIED == widthMode) {
+      widthSpec = MeasureSpec.makeMeasureSpec(screenWidth, MeasureSpec.AT_MOST);
+    } else {
+      widthSpec = widthMeasureSpec;
+    }
+    if (MeasureSpec.UNSPECIFIED == heightMode) {
+      heightSpec = MeasureSpec.makeMeasureSpec(screenHeight, MeasureSpec.AT_MOST);
+    } else {
+      heightSpec = heightMeasureSpec;
+    }
+    super.onMeasure(widthSpec, heightSpec);
+    measureChildren(widthSpec, heightSpec);
+  }
+  @Override
+  protected void onLayout(boolean changed, int l, int t, int r, int b) {
+    final int centerX = (r - l) >> 1;
+    final int centerY = (b - t) >> 1;
+    coverView.layout(l, t, r, b);
+    loadingLayout.layout(centerX - (loadingLayout.getMeasuredWidth() >> 1),
+      centerY - (loadingLayout.getMeasuredHeight() >> 1),
+      centerX + (loadingLayout.getMeasuredWidth() >> 1),
+      centerY + (loadingLayout.getMeasuredHeight() >> 1)
+    );
   }
 
   public void setLoadingText(final CharSequence text) {

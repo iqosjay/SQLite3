@@ -1,5 +1,6 @@
 package com.roy.libraries.utils;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,6 +9,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
+import android.util.TypedValue;
 
 import com.roy.libraries.App;
 
@@ -31,6 +33,15 @@ public class AndroidUtil {
   public static int getColor(final int id) {
     final Resources res = App.getApp().getResources();
     return res.getColor(id);
+  }
+
+  public static int getActionBarHeight() {
+    final Context context = App.getApp().getApplicationContext();
+    final TypedValue typedValue = new TypedValue();
+    if (context.getTheme().resolveAttribute(android.R.attr.actionBarSize, typedValue, true)) {
+      return TypedValue.complexToDimensionPixelSize(typedValue.data, dm);
+    }
+    return 0;
   }
 
   public static Drawable makeShape(final int solidColor,

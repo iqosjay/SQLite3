@@ -35,6 +35,12 @@ public class AndroidUtil {
     return res.getColor(id);
   }
 
+  public static int getStatusBarHeight() {
+    final Resources resources = App.getApp().getResources();
+    int resourceId = resources.getIdentifier("status_bar_height", "dimen", "android");
+    return resourceId > 0 ? resources.getDimensionPixelSize(resourceId) : 0;
+  }
+
   public static int getActionBarHeight() {
     final Context context = App.getApp().getApplicationContext();
     final TypedValue typedValue = new TypedValue();

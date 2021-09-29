@@ -2,7 +2,9 @@ package com.roy.sqlite3;
 
 import static com.roy.sqlite3.utils.AndroidUtil.dp;
 import static com.roy.sqlite3.utils.AndroidUtil.getActionBarHeight;
+import static com.roy.sqlite3.utils.AndroidUtil.getStatusBarHeight;
 import static com.roy.sqlite3.utils.AndroidUtil.makeShape;
+import static com.roy.sqlite3.utils.AndroidUtil.screenHeight;
 import static com.roy.sqlite3.utils.AndroidUtil.screenWidth;
 
 import android.app.ActionBar;
@@ -12,6 +14,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -318,17 +321,18 @@ public class SQLiteActivity extends Activity {
       listView = new ListView(context);
       emptyView = new EmptyView(context);
 
+      final Drawable buttonShape = makeShape(AndroidUtil.getColor(R.color.teal_200), 4, 0, 0);
       final int halfWidth = screenWidth >> 1;
       final int dp24 = dp16 + dp8;
 
       buttonInsert.setLayoutParams(new LayoutParams(halfWidth - dp24, -2));
       buttonInsert.setTextColor(Color.WHITE);
-      buttonInsert.setBackground(makeShape(AndroidUtil.getColor(R.color.teal_200), 4, 0, 0));
+      buttonInsert.setBackground(buttonShape);
       buttonInsert.setText("插入数据");
 
       buttonSelect.setLayoutParams(new LayoutParams(halfWidth - dp24, -2));
       buttonSelect.setTextColor(Color.WHITE);
-      buttonSelect.setBackground(makeShape(AndroidUtil.getColor(R.color.teal_200), 4, 0, 0));
+      buttonSelect.setBackground(buttonShape);
       buttonSelect.setText("查询数据");
 
       listView.setLayoutParams(new LayoutParams(-1, -1));
@@ -383,7 +387,7 @@ public class SQLiteActivity extends Activity {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
       final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-      final int heightMode = MeasureSpec.getMode(widthMeasureSpec);
+      final int heightMode = MeasureSpec.getMode(heightMeasureSpec);
       final int widthSpec;
       final int heightSpec;
       if (MeasureSpec.AT_MOST == widthMode || MeasureSpec.UNSPECIFIED == widthMode) {
@@ -392,7 +396,7 @@ public class SQLiteActivity extends Activity {
         widthSpec = widthMeasureSpec;
       }
       if (MeasureSpec.AT_MOST == heightMode || MeasureSpec.UNSPECIFIED == heightMode) {
-        heightSpec = MeasureSpec.makeMeasureSpec(getActionBarHeight(), MeasureSpec.EXACTLY);
+        heightSpec = MeasureSpec.makeMeasureSpec(screenHeight - getStatusBarHeight() - getActionBarHeight(), MeasureSpec.EXACTLY);
       } else {
         heightSpec = heightMeasureSpec;
       }
@@ -412,7 +416,7 @@ public class SQLiteActivity extends Activity {
           r - dp16,
           b - dp8
       );
-      listView.layout(l, t, r, b - buttonInsert.getMeasuredHeight() - dp16);
+      listView.layout(l, t, r, b - buttonInsert.getMeasuredHeight() - dp8);
       loadingView.layout(l, t, r, b);
     }
 

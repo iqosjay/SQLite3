@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.roy.libraries",
+  "applicationId": "com.roy.sqlite3",
   "variantName": "release",
   "elements": [
     {

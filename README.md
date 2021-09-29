@@ -13,4 +13,11 @@
 
 #### 如何使用？
 
+[SQLiteActivity.java](https://github.com/iqosjay/SQLite3/blob/main/app/src/main/java/com/roy/sqlite3/SQLiteActivity.java) 前 4 个方法分别演示了增、删、改、查 和 不同的数据类型
+
+仓库国庆过了再发，假如你立刻要用
+
+1、Android Studio 下载 NDK
+
+2、下载源码把 『database』模块添加依赖就行了
 

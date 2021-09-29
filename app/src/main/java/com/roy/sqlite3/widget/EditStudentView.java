@@ -5,6 +5,7 @@ import static com.roy.sqlite3.utils.AndroidUtil.makeShape;
 import static com.roy.sqlite3.utils.AndroidUtil.sp;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -72,7 +73,7 @@ public class EditStudentView extends ViewGroup {
     int y = t + dp(16);
     for (int i = 0; i != childCount; ++i) {
       final View child = getChildAt(i);
-      child.layout(x, y, x + child.getMeasuredWidth(), y += child.getMeasuredHeight());
+      child.layout(x, y, x + child.getMeasuredWidth() - dp(24), y += child.getMeasuredHeight());
       y += dp(8);
     }
   }
@@ -90,7 +91,7 @@ public class EditStudentView extends ViewGroup {
       return null;
     }
     final Student copy = student.clone();
-    final String name = copy.getName();
+    final String name = editName.getText().toString();
     if (!TextUtils.isEmpty(name)) {
       copy.setName(name);
     }
@@ -109,9 +110,15 @@ public class EditStudentView extends ViewGroup {
     final EditText editText = new EditText(context);
     final LayoutParams layoutParams = new LayoutParams(-1, -2);
     editText.setBackground(makeShape(0, 4, 0xffefeff4, 1));
-    editText.setTextSize(TypedValue.COMPLEX_UNIT_PX, sp(16));
+    editText.setTextSize(TypedValue.COMPLEX_UNIT_PX, sp(18));
     editText.setPadding(dp(8), dp(8), dp(8), dp(8));
     editText.setSingleLine(true);
+    editText.setTextColor(Color.BLACK);
+    editText.setOnFocusChangeListener((v, hasFocus) -> {
+      if (hasFocus) {
+        editText.setSelection(editText.getText().length());
+      }
+    });
     editText.setImeOptions(EditorInfo.IME_ACTION_NEXT);
     editText.setInputType(InputType.TYPE_CLASS_TEXT);
     editText.setLayoutParams(layoutParams);

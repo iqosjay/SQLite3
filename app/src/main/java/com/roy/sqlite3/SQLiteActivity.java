@@ -1,9 +1,9 @@
-package com.roy.libraries;
+package com.roy.sqlite3;
 
-import static com.roy.libraries.utils.AndroidUtil.dp;
-import static com.roy.libraries.utils.AndroidUtil.getActionBarHeight;
-import static com.roy.libraries.utils.AndroidUtil.makeShape;
-import static com.roy.libraries.utils.AndroidUtil.screenWidth;
+import static com.roy.sqlite3.utils.AndroidUtil.dp;
+import static com.roy.sqlite3.utils.AndroidUtil.getActionBarHeight;
+import static com.roy.sqlite3.utils.AndroidUtil.makeShape;
+import static com.roy.sqlite3.utils.AndroidUtil.screenWidth;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -25,12 +25,13 @@ import com.roy.database.SQLiteCursor;
 import com.roy.database.SQLiteDatabase;
 import com.roy.database.SQLiteException;
 import com.roy.database.SQLiteStatement;
-import com.roy.libraries.adapter.SQLiteListAdapter;
-import com.roy.libraries.data.Student;
-import com.roy.libraries.utils.AndroidUtil;
-import com.roy.libraries.utils.ToastUtil;
-import com.roy.libraries.widget.EmptyView;
-import com.roy.libraries.widget.LoadingView;
+import com.roy.sqlite3.adapter.SQLiteListAdapter;
+import com.roy.sqlite3.data.Student;
+import com.roy.sqlite3.utils.AndroidUtil;
+import com.roy.sqlite3.utils.ToastUtil;
+import com.roy.sqlite3.widget.EditStudentView;
+import com.roy.sqlite3.widget.EmptyView;
+import com.roy.sqlite3.widget.LoadingView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -63,18 +64,18 @@ public class SQLiteActivity extends Activity {
       db = SQLiteDatabase.open(dbname);
       if (!db.isTableExists("Student")) {
         db.compile("CREATE TABLE Student (" +
-          "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-          "name TEXT," +
-          "age INTEGER," +
-          "height DECIMAL," +
-          "avatar BLOB" +
-          ");")
-          .stepThis()
-          .dispose();
+            "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+            "name TEXT," +
+            "age INTEGER," +
+            "height DECIMAL," +
+            "avatar BLOB" +
+            ");")
+            .stepThis()
+            .dispose();
       }
       db.beginTransaction();
       stmt = db.compile("INSERT INTO Student(name,age,height,avatar) VALUES(?,?,?,?);")
-        .bind(new Object[]{"Roy", 27, 178.5, defaultAvatar()});
+          .bind(new Object[]{"Roy", 27, 178.5, defaultAvatar()});
       int code = stmt.step();
       if (1 != code)
         throw new SQLiteException("call step failed.");
@@ -115,6 +116,33 @@ public class SQLiteActivity extends Activity {
       AndroidUtil.runOnUIThread(() -> ToastUtil.showToast(e.getMessage()));
       e.printStackTrace();
     } finally {
+      closeSafely(db);
+    }
+  }
+
+  /**
+   * 修改数据
+   */
+  private void updateStudent(final Student student) {
+    if (null == student) {
+      return;
+    }
+    SQLiteDatabase db = null;
+    SQLiteStatement stmt = null;
+    try {
+      db = SQLiteDatabase.open(dbname);
+      stmt = db.compile("UPDATE Student SET name=?, age=?, height=? WHERE id=?;")
+          .bind(new Object[]{student.getName(), student.getAge(), student.getHeight(), student.getId()});
+      final int code = stmt.step();
+      if (1 != code)
+        throw new SQLiteException("更新数据失败：code = [" + code + "]");
+
+      AndroidUtil.runOnUIThread(this::executeSelect);
+    } catch (SQLiteException e) {
+      AndroidUtil.runOnUIThread(() -> ToastUtil.showToast(e.getMessage()));
+      e.printStackTrace();
+    } finally {
+      if (null != stmt) stmt.dispose();
       closeSafely(db);
     }
   }
@@ -207,6 +235,15 @@ public class SQLiteActivity extends Activity {
     });
   }
 
+  private void executeUpdate(final Student student) {
+    loadingView.setVisibility(View.VISIBLE);
+    loadingView.setLoadingText("正在修改...");
+    cachedThreadPool.execute(() -> {
+      updateStudent(student);
+      AndroidUtil.runOnUIThread(() -> loadingView.setVisibility(View.GONE));
+    });
+  }
+
   private void executeDelete(final Student student) {
     loadingView.setVisibility(View.VISIBLE);
     loadingView.setLoadingText("正在删除...");
@@ -229,16 +266,16 @@ public class SQLiteActivity extends Activity {
       return true;
     } else if (R.id.delete == item.getItemId()) {
       final AlertDialog dialog = new AlertDialog.Builder(context)
-        .setTitle("警告")
-        .setIcon(R.drawable.ic_warning)
-        .setMessage("确定要删除所有数据吗？删除之后不可恢复！")
-        .setPositiveButton("删除", (dlg, which) -> {
-          executeDelete(null);
-          dlg.dismiss();
-        })
-        .setNegativeButton("不", (dlg, which) -> dlg.dismiss())
-        .setCancelable(true)
-        .create();
+          .setTitle("警告")
+          .setIcon(R.drawable.ic_warning)
+          .setMessage("确定要删除所有数据吗？删除之后不可恢复！")
+          .setPositiveButton("删除", (dlg, which) -> {
+            executeDelete(null);
+            dlg.dismiss();
+          })
+          .setNegativeButton("不", (dlg, which) -> dlg.dismiss())
+          .setCancelable(true)
+          .create();
       dialog.setCanceledOnTouchOutside(false);
       dialog.show();
       return true;
@@ -246,6 +283,7 @@ public class SQLiteActivity extends Activity {
       return super.onOptionsItemSelected(item);
     }
   }
+
   private byte[] defaultAvatar() {
     if (null == avatar) {
       final Bitmap bitmap = BitmapFactory.decodeResource(App.getApp().getResources(), R.drawable.avatar);
@@ -295,17 +333,33 @@ public class SQLiteActivity extends Activity {
 
       listView.setLayoutParams(new LayoutParams(-1, -1));
       listView.setEmptyView(emptyView);
+      listView.setOnItemClickListener((parent, view, position, id) -> {
+        final EditStudentView editView = new EditStudentView(context);
+        editView.setStudent(adapter.getItem(position));
+        final AlertDialog dialog = new AlertDialog.Builder(context)
+            .setTitle("编辑")
+            .setView(editView)
+            .setPositiveButton("修改", (dlg, which) -> {
+              executeUpdate(editView.getStudent());
+              dlg.dismiss();
+            })
+            .setNegativeButton("放弃", (dlg, which) -> dlg.dismiss())
+            .setCancelable(true)
+            .create();
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+      });
       listView.setOnItemLongClickListener((parent, view, position, id) -> {
         final AlertDialog dialog = new AlertDialog.Builder(context)
-          .setTitle("警告")
-          .setMessage("确定要删除这条数据吗？删除之后不可恢复！")
-          .setPositiveButton("删除", (dlg, which) -> {
-            executeDelete(adapter.getItem(position));
-            dlg.dismiss();
-          })
-          .setNegativeButton("不", (dlg, which) -> dlg.dismiss())
-          .setCancelable(true)
-          .create();
+            .setTitle("警告")
+            .setMessage("确定要删除这条数据吗？删除之后不可恢复！")
+            .setPositiveButton("删除", (dlg, which) -> {
+              executeDelete(adapter.getItem(position));
+              dlg.dismiss();
+            })
+            .setNegativeButton("不", (dlg, which) -> dlg.dismiss())
+            .setCancelable(true)
+            .create();
         dialog.setCanceledOnTouchOutside(false);
         dialog.show();
         return true;
@@ -349,14 +403,14 @@ public class SQLiteActivity extends Activity {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
       buttonInsert.layout(l + dp16,
-        b - dp8 - buttonInsert.getMeasuredHeight(),
-        l + (screenWidth >> 1) - dp8,
-        b - dp8
+          b - dp8 - buttonInsert.getMeasuredHeight(),
+          l + (screenWidth >> 1) - dp8,
+          b - dp8
       );
       buttonSelect.layout(l + (screenWidth >> 1) + dp8,
-        b - dp8 - buttonSelect.getMeasuredHeight(),
-        r - dp16,
-        b - dp8
+          b - dp8 - buttonSelect.getMeasuredHeight(),
+          r - dp16,
+          b - dp8
       );
       listView.layout(l, t, r, b - buttonInsert.getMeasuredHeight() - dp16);
       loadingView.layout(l, t, r, b);

@@ -1,4 +1,4 @@
-package com.roy.libraries;
+package com.roy.sqlite3;
 
 import android.app.Application;
 import android.os.Handler;

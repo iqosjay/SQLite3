@@ -1,10 +1,10 @@
-package com.roy.libraries.utils;
+package com.roy.sqlite3.utils;
 
 import android.content.Context;
 import android.text.TextUtils;
 import android.widget.Toast;
 
-import com.roy.libraries.App;
+import com.roy.sqlite3.App;
 
 /**
  * Created by Roy on 2021/9/26.

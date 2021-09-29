@@ -1,4 +1,4 @@
-package com.roy.libraries.utils;
+package com.roy.sqlite3.utils;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -11,7 +11,7 @@ import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 
-import com.roy.libraries.App;
+import com.roy.sqlite3.App;
 
 /**
  * Created by Roy on 2021/9/26.

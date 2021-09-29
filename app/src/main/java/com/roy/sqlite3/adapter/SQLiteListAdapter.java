@@ -1,9 +1,7 @@
-package com.roy.libraries.adapter;
+package com.roy.sqlite3.adapter;
 
-import static com.roy.libraries.utils.AndroidUtil.dp;
-import static com.roy.libraries.utils.AndroidUtil.screenHeight;
-import static com.roy.libraries.utils.AndroidUtil.screenWidth;
-import static com.roy.libraries.utils.AndroidUtil.sp;
+import static com.roy.sqlite3.utils.AndroidUtil.dp;
+import static com.roy.sqlite3.utils.AndroidUtil.sp;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -18,8 +16,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.roy.libraries.data.Student;
-import com.roy.libraries.utils.AndroidUtil;
+import com.roy.sqlite3.data.Student;
+import com.roy.sqlite3.utils.AndroidUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -113,7 +111,7 @@ public class SQLiteListAdapter extends BaseAdapter {
   }
 
   private static class ViewHolder {
-    private static final String INFO_FORMAT = "主键Id: [ %1$5d ] 年龄: %2$d    身高: %3$.2f cm";
+    private static final String INFO_FORMAT = "主键Id: [ %1$5d ] 年龄: %2$d 身高: %3$.2f cm";
     private final ItemView itemView;
     private Map<byte[], Bitmap> avatarMap = null;
 

@@ -1,11 +1,11 @@
-package com.roy.libraries.widget;
+package com.roy.sqlite3.widget;
 
-import static com.roy.libraries.utils.AndroidUtil.dp;
-import static com.roy.libraries.utils.AndroidUtil.getColor;
-import static com.roy.libraries.utils.AndroidUtil.makeShape;
-import static com.roy.libraries.utils.AndroidUtil.screenHeight;
-import static com.roy.libraries.utils.AndroidUtil.screenWidth;
-import static com.roy.libraries.utils.AndroidUtil.sp;
+import static com.roy.sqlite3.utils.AndroidUtil.dp;
+import static com.roy.sqlite3.utils.AndroidUtil.getColor;
+import static com.roy.sqlite3.utils.AndroidUtil.makeShape;
+import static com.roy.sqlite3.utils.AndroidUtil.screenHeight;
+import static com.roy.sqlite3.utils.AndroidUtil.screenWidth;
+import static com.roy.sqlite3.utils.AndroidUtil.sp;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -17,7 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.roy.libraries.R;
+import com.roy.sqlite3.R;
 
 /**
  * Created by Roy on 2021/9/27.

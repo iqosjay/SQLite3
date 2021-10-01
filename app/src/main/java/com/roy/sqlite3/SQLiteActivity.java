@@ -1,11 +1,7 @@
 package com.roy.sqlite3;
 
 import static com.roy.sqlite3.utils.AndroidUtil.dp;
-import static com.roy.sqlite3.utils.AndroidUtil.getActionBarHeight;
-import static com.roy.sqlite3.utils.AndroidUtil.getStatusBarHeight;
 import static com.roy.sqlite3.utils.AndroidUtil.makeShape;
-import static com.roy.sqlite3.utils.AndroidUtil.screenHeight;
-import static com.roy.sqlite3.utils.AndroidUtil.screenWidth;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -86,7 +82,7 @@ public class SQLiteActivity extends Activity {
         throw new SQLiteException("call step failed.");
 
       db.commitTransaction();
-      final List<Student> students = selectStudent();
+      final List<Student> students = selectStudents();
       AndroidUtil.runOnUIThread(() -> {
         adapter.setStudents(students);
         adapter.notifyDataSetChanged();
@@ -115,7 +111,11 @@ public class SQLiteActivity extends Activity {
         } else {                //删除单条
           db.compile("DELETE FROM Student WHERE id=?;").bind(new Object[]{student.getId()}).stepThis().dispose();
         }
-        AndroidUtil.runOnUIThread(this::executeSelect);
+        final List<Student> students = selectStudents();
+        AndroidUtil.runOnUIThread(() -> {
+          adapter.setStudents(students);
+          adapter.notifyDataSetChanged();
+        });
       }
     } catch (SQLiteException e) {
       AndroidUtil.runOnUIThread(() -> ToastUtil.showToast(e.getMessage()));
@@ -142,7 +142,11 @@ public class SQLiteActivity extends Activity {
       if (1 != code)
         throw new SQLiteException("更新数据失败：code = [" + code + "]");
 
-      AndroidUtil.runOnUIThread(this::executeSelect);
+      final List<Student> students = selectStudents();
+      AndroidUtil.runOnUIThread(() -> {
+        adapter.setStudents(students);
+        adapter.notifyDataSetChanged();
+      });
     } catch (SQLiteException e) {
       AndroidUtil.runOnUIThread(() -> ToastUtil.showToast(e.getMessage()));
       e.printStackTrace();
@@ -157,7 +161,7 @@ public class SQLiteActivity extends Activity {
    *
    * @return Student 表中的所有数据
    */
-  private List<Student> selectStudent() {
+  private List<Student> selectStudents() {
     final List<Student> students = new ArrayList<>();
     SQLiteDatabase db = null;
     SQLiteCursor cursor = null;
@@ -231,7 +235,7 @@ public class SQLiteActivity extends Activity {
     loadingView.setVisibility(View.VISIBLE);
     loadingView.setLoadingText("正在查询...");
     cachedThreadPool.execute(() -> {
-      final List<Student> students = selectStudent();
+      final List<Student> students = selectStudents();
       AndroidUtil.runOnUIThread(() -> {
         loadingView.setVisibility(View.GONE);
         adapter.setStudents(students);

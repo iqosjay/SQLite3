@@ -6,14 +6,15 @@ import static com.roy.sqlite3.utils.AndroidUtil.sp;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.media.session.MediaController;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.TypedValue;
-import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.roy.sqlite3.data.Student;
 
@@ -23,7 +24,7 @@ import java.util.Locale;
  * Created by Roy on 2021/9/29.
  * 修改学生的信息弹窗布局
  */
-public class EditStudentView extends ViewGroup {
+public class EditStudentView extends LinearLayout {
 
   private final EditText editName;
   private final EditText editAge;
@@ -33,6 +34,9 @@ public class EditStudentView extends ViewGroup {
 
   public EditStudentView(final Context context) {
     super(context);
+
+    setOrientation(VERTICAL);
+
 
     editName = createEditText(context);
     editName.setHint("姓名");
@@ -48,34 +52,17 @@ public class EditStudentView extends ViewGroup {
     editHeight.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
     editHeight.setFilters(new InputFilter[]{new InputFilter.LengthFilter(6)});
 
-    addView(editName);
-    addView(editAge);
-    addView(editHeight);
+    final LinearLayout nameLayout = createItem(context, "姓名：");
+    final LinearLayout ageLayout =createItem(context, "年龄：");
+    final LinearLayout heightLayout =createItem(context, "身高：");
+    nameLayout.addView(editName);
+    ageLayout.addView(editAge);
+    heightLayout.addView(editHeight);
 
-  }
+    addView(nameLayout);
+    addView(ageLayout);
+    addView(heightLayout);
 
-  @Override
-  protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    measureChildren(widthMeasureSpec, heightMeasureSpec);
-    final int parentWidth = getMeasuredWidth();
-    final int editTextHeight = editName.getMeasuredHeight();
-    editName.getLayoutParams().width = parentWidth - dp(24);
-    editAge.getLayoutParams().width = parentWidth - dp(24);
-    editHeight.getLayoutParams().width = parentWidth - dp(24);
-    setMeasuredDimension(parentWidth, editTextHeight * 3 + dp(32));
-  }
-
-  @Override
-  protected void onLayout(boolean changed, int l, int t, int r, int b) {
-    final int childCount = getChildCount();
-    final int x = dp(24);
-    int y = t + dp(16);
-    for (int i = 0; i != childCount; ++i) {
-      final View child = getChildAt(i);
-      child.layout(x, y, x + child.getMeasuredWidth() - dp(24), y += child.getMeasuredHeight());
-      y += dp(8);
-    }
   }
 
 
@@ -104,6 +91,26 @@ public class EditStudentView extends ViewGroup {
     } catch (NumberFormatException ignored) {
     }
     return copy;
+  }
+
+  private static LinearLayout createItem(final Context context, final String text) {
+    final LinearLayout linearLayout = new LinearLayout(context);
+    final LayoutParams layoutParams = new LayoutParams(-1, -1);
+    layoutParams.setMargins(dp(24), dp(8), dp(24), 0);
+    linearLayout.setOrientation(HORIZONTAL);
+    linearLayout.addView(createTextView(context, text));
+    linearLayout.setLayoutParams(layoutParams);
+    return linearLayout;
+  }
+
+  private static TextView createTextView(final Context context, final String text) {
+    final TextView textView = new TextView(context);
+    textView.setLayoutParams(new LayoutParams(-2, -2));
+    textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, sp(18));
+    textView.setTextColor(Color.BLACK);
+    textView.setSingleLine(true);
+    textView.setText(text);
+    return textView;
   }
 
   private static EditText createEditText(final Context context) {

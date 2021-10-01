@@ -22,7 +22,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 
 import com.roy.database.SQLiteCursor;
 import com.roy.database.SQLiteDatabase;
@@ -307,35 +309,43 @@ public class SQLiteActivity extends Activity {
     }
   }
 
-  private class ContentView extends ViewGroup {
-    private final int dp16 = dp(16);
-    private final int dp8 = dp16 >> 1;
-    private final Button buttonInsert;
-    private final Button buttonSelect;
-    private final ListView listView;
+  private class ContentView extends RelativeLayout {
 
     public ContentView() {
       super(context);
-      buttonInsert = new Button(context);
-      buttonSelect = new Button(context);
-      listView = new ListView(context);
+      final Drawable buttonShape = makeShape(AndroidUtil.getColor(R.color.teal_200), 4, 0, 0);
+      final int buttonLayoutId = 1;
+
       emptyView = new EmptyView(context);
 
-      final Drawable buttonShape = makeShape(AndroidUtil.getColor(R.color.teal_200), 4, 0, 0);
-      final int halfWidth = screenWidth >> 1;
-      final int dp24 = dp16 + dp8;
-
-      buttonInsert.setLayoutParams(new LayoutParams(halfWidth - dp24, -2));
+      final Button buttonInsert = new Button(context);
+      final LinearLayout.LayoutParams insertLayoutParams = new LinearLayout.LayoutParams(0, -2, 1f);
+      insertLayoutParams.setMargins(dp(16), dp(4), dp(4), dp(8));
+      buttonInsert.setLayoutParams(insertLayoutParams);
       buttonInsert.setTextColor(Color.WHITE);
       buttonInsert.setBackground(buttonShape);
       buttonInsert.setText("插入数据");
 
-      buttonSelect.setLayoutParams(new LayoutParams(halfWidth - dp24, -2));
+      final Button buttonSelect = new Button(context);
+      final LinearLayout.LayoutParams selectLayoutParams = new LinearLayout.LayoutParams(0, -2, 1f);
+      selectLayoutParams.setMargins(dp(4), dp(4), dp(16), dp(8));
+      buttonSelect.setLayoutParams(selectLayoutParams);
       buttonSelect.setTextColor(Color.WHITE);
       buttonSelect.setBackground(buttonShape);
       buttonSelect.setText("查询数据");
 
-      listView.setLayoutParams(new LayoutParams(-1, -1));
+      final LinearLayout buttonLayout = new LinearLayout(context);
+      final LayoutParams buttonLayoutParams = new LayoutParams(-1, -2);
+      buttonLayoutParams.addRule(ALIGN_PARENT_BOTTOM);
+      buttonLayout.setLayoutParams(buttonLayoutParams);
+      buttonLayout.setId(buttonLayoutId);
+      buttonLayout.addView(buttonInsert);
+      buttonLayout.addView(buttonSelect);
+
+      final ListView listView = new ListView(context);
+      final LayoutParams listViewLayoutParams = new LayoutParams(-1, -1);
+      listViewLayoutParams.addRule(ABOVE, buttonLayoutId);
+      listView.setLayoutParams(listViewLayoutParams);
       listView.setEmptyView(emptyView);
       listView.setOnItemClickListener((parent, view, position, id) -> {
         final EditStudentView editView = new EditStudentView(context);
@@ -375,49 +385,12 @@ public class SQLiteActivity extends Activity {
       loadingView.setLoadingText("加载中...");
       loadingView.setVisibility(View.GONE);
 
-      addView(buttonInsert);
-      addView(buttonSelect);
       addView(listView);
+      addView(buttonLayout);
       addView(loadingView);
 
       buttonInsert.setOnClickListener(v -> executeInsert());
       buttonSelect.setOnClickListener(v -> executeSelect());
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-      final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-      final int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-      final int widthSpec;
-      final int heightSpec;
-      if (MeasureSpec.AT_MOST == widthMode || MeasureSpec.UNSPECIFIED == widthMode) {
-        widthSpec = MeasureSpec.makeMeasureSpec(screenWidth, MeasureSpec.EXACTLY);
-      } else {
-        widthSpec = widthMeasureSpec;
-      }
-      if (MeasureSpec.AT_MOST == heightMode || MeasureSpec.UNSPECIFIED == heightMode) {
-        heightSpec = MeasureSpec.makeMeasureSpec(screenHeight - getStatusBarHeight() - getActionBarHeight(), MeasureSpec.EXACTLY);
-      } else {
-        heightSpec = heightMeasureSpec;
-      }
-      super.onMeasure(widthSpec, heightSpec);
-      measureChildren(widthSpec, heightSpec);
-    }
-
-    @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-      buttonInsert.layout(l + dp16,
-          b - dp8 - buttonInsert.getMeasuredHeight(),
-          l + (screenWidth >> 1) - dp8,
-          b - dp8
-      );
-      buttonSelect.layout(l + (screenWidth >> 1) + dp8,
-          b - dp8 - buttonSelect.getMeasuredHeight(),
-          r - dp16,
-          b - dp8
-      );
-      listView.layout(l, t, r, b - buttonInsert.getMeasuredHeight() - dp8);
-      loadingView.layout(l, t, r, b);
     }
 
   }

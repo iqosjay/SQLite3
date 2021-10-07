@@ -44,7 +44,135 @@ dependencies {
 }
 ```
 
-具体调用：
+基本套路：
+
+1、SQLiteDatabase.open("数据库文件的绝对路径") 获得一个 database 对象
+
+2、SQLiteDatabase#compile("SQL语句")编译SQL语句
+
+3、SQLiteStatement#bind(Object[] args)绑定占位符的数据
+
+4、SQLiteStatement#step() SQLiteStatement#stepThis() 执行绑定了数据的SQL
+
+5、SQLiteDatabase#close()  释放 sqlite3*
+
+6、SQLiteStatement#close() 释放 sqlite3_stmt*
+
+例：
+
+SQLiteDatabase db = SQLiteDatabase.open("数据库文件的绝对路径");
+
+db.compile("SQL语句").compile(new Object[]{...}).stepThis().dispose(); 一气呵成
+
+实际代码：
+
+插入数据：
+```
+private void insert() {
+  SQLiteDatabase db = null;
+  SQLiteStatement stmt = null;
+  try {
+    db = SQLiteDatabase.open(dbname);   //创建或打开一个数据库
+    if (!db.isTableExists("Student")) { //判断表是否存在？
+      db.compile("CREATE TABLE Student (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT,age INTEGER,height DECIMAL,avatar BLOB);").stepThis().dispose();
+    }
+    db.beginTransaction();  //开启事务
+    stmt = db.compile("INSERT INTO Student(name,age,height,avatar) VALUES(?,?,?,?);").bind(new Object[]{"Roy", 27, 178.5, defaultAvatar()}); //编译SQL语句并绑定占位符的数据
+    int code = stmt.step(); //执行SQL
+    if (1 != code)
+      throw new SQLiteException("call step failed.");
+
+    db.commitTransaction(); //提交事务
+  } catch (final SQLiteException e) {
+    e.printStackTrace();
+  } finally {
+    if (null != stmt) stmt.dispose(); //释放 sqlite3_stmt*
+    if (null != db) db.close();       //释放 sqlite3*
+  }
+}
+```
+
+删除数据：
+```
+private void delete(final Student student) {
+  SQLiteDatabase db = null;
+  try {
+    db = SQLiteDatabase.open(dbname);
+    if (db.isTableExists("Student")) { //只有表存在的情况下才往下执行
+      if (null == student) {  //删除所有
+        db.compile("DELETE FROM Student;").stepThis().dispose();
+      } else {                //删除单条
+        db.compile("DELETE FROM Student WHERE id=?;").bind(new Object[]{student.getId()}).stepThis().dispose();
+      }
+    }
+  } catch (SQLiteException e) {
+    e.printStackTrace();
+  } finally {
+    if (null != db) db.close(); //释放 sqlite3*
+  }
+}
+```
+
+修改数据：
+```
+private void update(final Student student) {
+  if (null == student) { //空校验
+    return;
+  }
+  SQLiteDatabase db = null;
+  SQLiteStatement stmt = null;
+  try {
+    db = SQLiteDatabase.open(dbname); //创建或打开一个数据库
+    stmt = db.compile("UPDATE Student SET name=?, age=?, height=? WHERE id=?;").bind(new Object[]{student.getName(), student.getAge(), student.getHeight(), student.getId()}); //编译SQL语句并绑定占位符的数据
+    final int code = stmt.step();     //执行SQL
+    if (1 != code)
+      throw new SQLiteException("更新数据失败：code = [" + code + "]");
+  } catch (SQLiteException e) {
+    e.printStackTrace();
+  } finally {
+    if (null != stmt) stmt.dispose(); //释放 sqlite3_stmt*
+    if (null != db) db.close();       //释放 sqlite3*
+  }
+}
+```
+
+查询数据：
+```
+private List<Student> select() {
+  final List<Student> students = new ArrayList<>();
+  SQLiteDatabase db = null;
+  SQLiteCursor cursor = null;
+  try {
+    db = SQLiteDatabase.open(dbname);   //创建或打开一个数据库
+    if (db.isTableExists("Student")) {  //只有表存在的情况下才能查询
+      cursor = db.compile("SELECT * FROM Student WHERE height>?;").query(new Object[]{0.0d});//编译SQL语句并绑定占位符的数据
+      while (cursor.next()) {           //还有下一行数据
+        final long id = cursor.getInt64(0);
+        final String name = cursor.getString(1);
+        final int age = cursor.getInt32(2);
+        final double height = cursor.getDouble(3);
+        final byte[] avatar = cursor.getBlob(4);
+        final Student student = new Student();
+        student.setId(id);
+        student.setAge(age);
+        student.setName(name);
+        student.setHeight(height);
+        student.setAvatar(avatar);
+        students.add(student);
+      }
+    }
+  } catch (final SQLiteException e) {
+    e.printStackTrace();
+  } finally {
+    if (null != cursor) cursor.dispose(); //释放 sqlite3_stmt* (Cursor 通过SQLiteStatement实现的，Cursor的dispose 本质上调用的是SQLiteStatement的dispose)
+    if (null != db) db.close();           //释放 sqlite3*
+  }
+  return students;
+}
+```
+
+应用：
 
 [SQLiteActivity.java](https://github.com/iqosjay/SQLite3/blob/main/app/src/main/java/com/roy/sqlite3/SQLiteActivity.java) 前 4 个方法分别演示了增、删、改、查 和 不同的数据类型
 
+或者你也可以直接 clone 本工程下来并直接依赖 database 模块

@@ -1,6 +1,10 @@
 plugins {
   id 'com.android.library'
+//  id 'maven'
+  id 'maven-publish'
+  id 'signing'
 }
+
 
 android {
   compileSdk 30
@@ -10,11 +14,6 @@ android {
     targetSdk 30
     versionCode 1
     versionName "1.0"
-    externalNativeBuild {
-      cmake {
-        cppFlags ''
-      }
-    }
   }
 
   buildTypes {
@@ -35,3 +34,5 @@ android {
     }
   }
 }
+
+apply from: './publish_config.gradle'

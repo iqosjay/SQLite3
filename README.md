@@ -14,7 +14,7 @@
 
 ### 有什么用？或者我为什么要用你这个？
 
-1、与 Android 原生 sqlite3 相比性能更高效（测试结果后面会给出）
+1、与 Android 原生 sqlite3 相比性能更高效（我测试了但是没统计、有兴趣的朋友自己试试看吧、性能大概是原生 Android 的5倍左右）
 
 2、API更简洁
 
@@ -23,11 +23,28 @@
 
 ### 如何使用？
 
+导入：
+1、首先在工程级的 build.gradle 中添加 mavenCentral()
+
+```
+buildscript {
+  repositories {
+    mavenCentral() // 最新版的Android Studio应该是默认就有 mavenCentral() 配置
+  }
+}
+```
+
+2、再在你需要使用的 模块级的 build.gradle 中添加依赖 'io.github.iqosjay:sqlite3:1.0.0'
+
+```
+dependencies {
+  ...
+  implementation 'io.github.iqosjay:sqlite3:1.0.0' //就是我了~~
+  ...
+}
+```
+
+具体调用：
+
 [SQLiteActivity.java](https://github.com/iqosjay/SQLite3/blob/main/app/src/main/java/com/roy/sqlite3/SQLiteActivity.java) 前 4 个方法分别演示了增、删、改、查 和 不同的数据类型
-
-仓库国庆过了再发，假如你立刻要用
-
-1、Android Studio 下载 NDK
-
-2、下载源码把 『database』模块添加依赖就行了
 

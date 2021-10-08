@@ -26,5 +26,5 @@ android {
 }
 
 dependencies {
-  implementation project(path: ':database')
+  implementation 'io.github.iqosjay:sqlite3:1.0.0'
 }

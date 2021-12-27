@@ -72,7 +72,7 @@ dependencies {
 
 SQLiteDatabase db = SQLiteDatabase.open("数据库文件的绝对路径");
 
-db.compile("SQL语句").compile(new Object[]{...}).stepThis().dispose(); 一气呵成
+db.compile("SQL语句").bind(new Object[]{...}).stepThis().dispose(); 一气呵成
 
 db.close();
 
